@@ -21,19 +21,20 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
-passport.initialize();
-passport.session();
 
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
 
+app.use(passport.initialize());
+app.use(passport.session());
   // Be sure to change the title
   app.route('/').get((req, res) => {
     // Change the response to render the Pug template
     res.render('index', {
       title: 'Connected to Database',
       message: 'Please login',
-      showLogin: true
+      showLogin: true,
+      showRegistration: true
     });
   });
 
@@ -52,6 +53,37 @@ myDB(async client => {
     }
     res.redirect('/');
   };
+
+  app.route('/register')
+  .post((req, res, next) => {
+    myDataBase.findOne({ username: req.body.username }, (err, user) => {
+      if (err) {
+        next(err);
+      } else if (user) {
+        res.redirect('/');
+      } else {
+        myDataBase.insertOne({
+          username: req.body.username,
+          password: req.body.password
+        },
+          (err, doc) => {
+            if (err) {
+              res.redirect('/');
+            } else {
+              // The inserted document is held within
+              // the ops property of the doc
+              next(null, doc.ops[0]);
+            }
+          }
+        )
+      }
+    })
+  },
+    passport.authenticate('local', { failureRedirect: '/' }),
+    (req, res, next) => {
+      res.redirect('/profile');
+    }
+  );
 
   app
   .route('/profile')
