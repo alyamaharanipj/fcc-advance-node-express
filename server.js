@@ -21,6 +21,8 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+passport.initialize();
+passport.session();
 
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
@@ -59,10 +61,19 @@ myDB(async client => {
     });
   });
 
-  // Serialization and deserialization here...
-  passport.initialize();
-  passport.session();
+  app.route('/logout')
+  .get((req, res) => {
+    req.logout();
+    res.redirect('/');
+  });
 
+  app.use((req, res, next) => {
+    res.status(404)
+      .type('text')
+      .send('Not Found');
+  });
+
+  // Serialization and deserialization here...
   passport.use(new LocalStrategy((username, password, done) => {
     myDataBase.findOne({ username: username }, (err, user) => {
       console.log(`User ${username} attempted to log in.`);
