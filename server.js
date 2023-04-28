@@ -30,9 +30,19 @@ myDB(async client => {
     // Change the response to render the Pug template
     res.render('index', {
       title: 'Connected to Database',
-      message: 'Please login'
+      message: 'Please login',
+      showLogin: true
     });
   });
+
+  app.route("/login").post(
+    passport.authenticate("local", 
+    { failureRedirect: "/" }),
+    (req, res) => {
+      res.redirect("/profile");
+      console.log(`User ${req.user} attempted to log in.`)
+    }
+  );
 
   // Serialization and deserialization here...
   passport.initialize();
@@ -47,7 +57,7 @@ myDB(async client => {
       return done(null, user);
     });
   }));
-  
+
   passport.serializeUser((user, done) => {
     done(null, user._id);
   });
