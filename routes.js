@@ -18,7 +18,8 @@ app.route('/').get((req, res) => {
     passport.authenticate("github", 
     { failureRedirect: "/" }),
     (req, res) => {
-      res.redirect("/profile");
+      req.session.user_id = req.user.id
+      res.redirect("/chat");
       console.log(`User ${req.user} attempted to log in.`)
     }
   );
@@ -80,6 +81,14 @@ app.route('/').get((req, res) => {
   .get(ensureAuthenticated, (req,res) => {
     res.render('profile', {
       username: req.user.username
+    });
+  });
+
+  app
+  .route('/chat')
+  .get(ensureAuthenticated, (req,res) => {
+    res.render('chat', {
+      user: req.user
     });
   });
 
