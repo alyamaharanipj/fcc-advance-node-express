@@ -21,12 +21,12 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 myDB(async client => {
   const myDataBase = await client.db('database').collection('users');
 
-app.use(passport.initialize());
-app.use(passport.session());
   // Be sure to change the title
   app.route('/').get((req, res) => {
     // Change the response to render the Pug template
